@@ -1,0 +1,8 @@
+_name="Codex"
+_type="Code"
+_cmd="codex"
+_pros="OpenAI出品|多端同步"
+_cons="需订阅底层服务"
+_quota="🔑 需配置"
+_install="curl -fsSL https://chatgpt.com/codex/install.sh | sh"
+_run="codex"

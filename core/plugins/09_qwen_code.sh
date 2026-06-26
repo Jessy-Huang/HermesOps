@@ -1,0 +1,8 @@
+_name="Qwen_Code"
+_type="Code"
+_cmd="qwen"
+_pros="阿里云通义灵码|中文支持好"
+_cons="需额外配置百炼密钥"
+_quota="🔑 需配置"
+_install="bash -c \"\$(curl -fsSL https://qwen-code-assets.oss-cn-hangzhou.aliyuncs.com/installation/install-qwen.sh)\" -s --source bailian"
+_run="qwen"

@@ -1,0 +1,14 @@
+{
+  "version": "3.4.1",
+  "default_tool": "CodeBuddy",
+  "mcp": {
+    "enabled": true,
+    "server_port": 3000,
+    "memory_db": "~/.hermesops/memory.db"
+  },
+  "tools": {
+    "CodeBuddy": { "priority": 1, "free": true },
+    "Qoder": { "priority": 2, "free": true, "daily_limit": 200 },
+    "Claude_Code": { "priority": 5, "free": false }
+  }
+}

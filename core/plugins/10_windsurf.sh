@@ -1,0 +1,8 @@
+_name="Windsurf"
+_type="Code"
+_cmd="windsurf"
+_pros="多Agent协同|界面丝滑"
+_cons="免费高阶积分受限"
+_quota="≈15积分"
+_install="echo '📌 请在官网 https://windsurf.com 下载安装包安装'"
+_run="windsurf"

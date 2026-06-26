@@ -1,0 +1,8 @@
+_name="MiMo_Code"
+_type="Code"
+_cmd="mimo"
+_pros="完全免费|超长无限上下文"
+_cons="新工具生态建设中"
+_quota="∞ 无限"
+_install="curl -fsSL https://mimo.xiaomi.com/install | bash"
+_run="mimo"

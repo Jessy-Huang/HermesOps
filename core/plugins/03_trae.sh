@@ -1,0 +1,8 @@
+_name="TRAE_SOLO"
+_type="Code"
+_cmd="Trae"
+_pros="完全免费|AI原生IDE"
+_cons="需下载桌面端"
+_quota="∞ 无限"
+_install="echo '📌 请在官网 https://www.trae.cn/ide 下载安装包安装'"
+_run="Trae"

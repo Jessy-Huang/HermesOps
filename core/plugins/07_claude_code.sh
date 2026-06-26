@@ -1,0 +1,8 @@
+_name="Claude_Code"
+_type="Code"
+_cmd="claude"
+_pros="Claude最强CLI|模型极其优秀"
+_cons="强制需要官方订阅"
+_quota="🔑 需配置"
+_install="npm install -g @anthropic/claude-code"
+_run="claude"

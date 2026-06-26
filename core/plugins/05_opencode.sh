@@ -1,0 +1,8 @@
+_name="OpenCode"
+_type="Code"
+_cmd="opencode"
+_pros="开源免费|支持75+模型"
+_cons="需自备API Key"
+_quota="🔑 需配置"
+_install="npm install -g opencode-ai"
+_run="opencode"

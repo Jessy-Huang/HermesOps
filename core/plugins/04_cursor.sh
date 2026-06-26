@@ -1,0 +1,8 @@
+_name="Cursor"
+_type="Code"
+_cmd="cursor"
+_pros="业界标杆|智能度极高"
+_cons="付费版昂贵"
+_quota="🔑 需配置"
+_install="echo '📌 请在官网 https://cursor.com 下载安装包安装'"
+_run="cursor"

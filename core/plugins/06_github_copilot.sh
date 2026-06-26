@@ -1,0 +1,8 @@
+_name="GitHub_Copilot"
+_type="Code"
+_cmd="copilot"
+_pros="GitHub生态|对学生免费"
+_cons="免费额度受限"
+_quota="≈1200次/月"
+_install="echo '📌 请在您的 IDE（VS Code/JetBrains）插件市场中搜索并手动安装 GitHub Copilot'"
+_run="copilot"

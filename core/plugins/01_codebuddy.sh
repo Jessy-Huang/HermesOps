@@ -1,0 +1,8 @@
+_name="CodeBuddy"
+_type="Code"
+_cmd="codebuddy"
+_pros="完全免费|腾讯云npm"
+_cons="企业版收费"
+_quota="∞ 无限"
+_install="npm install -g @tencent-ai/codebuddy-code"
+_run="codebuddy"

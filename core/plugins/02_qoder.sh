@@ -1,0 +1,8 @@
+_name="Qoder"
+_type="Code"
+_cmd="qodercli"
+_pros="每日200次免费|Qwen3.7-Max"
+_cons="需登录使用"
+_quota="≈140次/日"
+_install="curl -fsSL https://qoder.com/install | bash"
+_run="qodercli"

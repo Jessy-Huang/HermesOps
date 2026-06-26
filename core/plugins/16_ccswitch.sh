@@ -1,0 +1,8 @@
+_name="CCSwitch"
+_type="Gate"
+_cmd="ccswitch"
+_pros="多路AI上下文极速路由"
+_cons="首次使用需映射本地代理"
+_quota="∞ 免费"
+_install="curl -fsSL https://www.ccswitch.io/install.sh | bash"
+_run="ccswitch UI"

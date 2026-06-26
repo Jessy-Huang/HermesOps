@@ -1,0 +1,8 @@
+_name="Hermes"
+_type="Agent"
+_cmd="hermes"
+_pros="自进化Agent|300+开源模型支持"
+_cons="首次部署需配置密钥"
+_quota="🔑 需配置"
+_install="curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash"
+_run="hermes"

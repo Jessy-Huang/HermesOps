@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# HermesOps - 入口程序 (v5.0.0 - 分布式矩阵协同版)
+# ==============================================================================
+
+export START_DIR="$(pwd)"
+
+RED='\033[0;91m'
+GREEN='\033[0;92m'
+YELLOW='\033[1;93m'
+BLUE='\033[0;94m'
+PURPLE='\033[0;95m'
+CYAN='\033[0;96m'
+WHITE='\033[1;97m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m'
+
+# 按严格依赖链强行载入核心解耦组件与分布式协同内核
+if [ -f "$HOME/.hermesops/core/env.sh" ]; then source "$HOME/.hermesops/core/env.sh"; else exit 1; fi
+if [ -f "$HOME/.hermesops/core/loader.sh" ]; then source "$HOME/.hermesops/core/loader.sh"; else exit 1; fi
+if [ -f "$HOME/.hermesops/core/ui.sh" ]; then source "$HOME/.hermesops/core/ui.sh"; else exit 1; fi
+if [ -f "$HOME/.hermesops/core/grid_engine.sh" ]; then source "$HOME/.hermesops/core/grid_engine.sh"; fi
+
+declare -A DAEMON_PIDS
+
+# ⚡ [LangGraph 思想扩展] 全局清理与断点持久化挂起
+cleanup() {
+    # 捕获退出状态：如果在进行协同任务，强行挂起并存档
+    if [ -n "$CURRENT_GRID_TASK" ]; then
+        echo -e "\n${YELLOW}💾 [LangGraph Persistence] 检测到环境中断，正在为活动任务 [${CURRENT_GRID_TASK}] 保存现场快照...${NC}"
+        if command -v grid_checkpoint_save &>/dev/null; then
+            grid_checkpoint_save "$CURRENT_GRID_TASK" "PAUSED" "" "" ""
+        fi
+    fi
+
+    if [ ${#DAEMON_PIDS[@]} -gt 0 ]; then
+        echo -e "\n${YELLOW}🧹 正在安全收回插件运行池并同步退出...${NC}"
+        for service in "${!DAEMON_PIDS[@]}"; do
+            local pid=${DAEMON_PIDS[$service]}
+            if kill -0 "$pid" >/dev/null 2>&1; then kill -15 "$pid" >/dev/null 2>&1; fi
+        done
+    fi
+}
+trap cleanup EXIT INT TERM HUP
+
+# ⚔️ [大厂多 Agent CLI 路由扩展] 支持通过命令行直接下达子任务控制指令
+handle_cli_commands() {
+    case "$1" in
+        "spawn")
+            # [Anthropic + SWE-agent] 派发子任务沙盒
+            # 用法: ai-tools spawn [子任务名] [指派小兵] [允许修改的文件]
+            if [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
+                echo -e "${RED}✗ 参数缺失。用法: hermesops spawn <subtask_id> <worker_plugin> <allowed_files_comma_separated>${NC}"
+                exit 1
+            fi
+            grid_spawn_sandbox "$2" "$3" "$4"
+            exit 0
+            ;;
+        "verify")
+            # [AgentCoder + CodeGraph] 自动回归测试与图谱边界核验
+            # 用法: ai-tools verify [子任务名]
+            if [ -z "$2" ]; then
+                echo -e "${RED}✗ 参数缺失。用法: hermesops verify <subtask_id>${NC}"
+                exit 1
+            fi
+            grid_verify_and_merge "$2"
+            exit 0
+            ;;
+        "handoff")
+            # [AutoGen] 异步控制权抛接路由
+            # 用法: ai-tools handoff [子任务名] [当前小兵] [接管小兵] [异常原因]
+            if [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
+                echo -e "${RED}✗ 参数缺失。用法: hermesops handoff <subtask_id> <from_worker> <to_agent> [reason]${NC}"
+                exit 1
+            fi
+            grid_handoff_signal "$2" "$3" "$4" "$5"
+            exit 0
+            ;;
+        "checkpoint")
+            # 打印长效记忆断点状态
+            if command -v get_project_hash &>/dev/null; then
+                local db_file="$HOME/.hermesops/projects/$(get_project_hash).json"
+                if [ -f "$db_file" ]; then
+                    echo -e "${CYAN}📊 [LangGraph Memory] 当前项目长效断点快照：${NC}"
+                    cat "$db_file"
+                else
+                    echo -e "${YELLOW}🏠 当前工作区干净，暂无长期记忆挂起。${NC}"
+                fi
+            fi
+            exit 0
+            ;;
+    esac
+}
+
+handle_top_choice() {
+    local choice=$1
+    case $choice in
+        [0-9]*)
+            local idx=$((choice - 1))
+            if [[ $idx -ge 0 && $idx -lt ${#PLUGINS_KEYS[@]} ]]; then
+                # 🛠️ 强行通过当前 Shell 环境直调内核函数
+                invoke_start "$idx"
+            else
+                echo -e "${RED}✗ 越界输入，未检索到对应的框架条目${NC}"
+            fi
+            ;;
+        a|A) install_menu ;;
+        r|R) register_plugins ;;
+        q|Q)
+            echo -e "${GREEN}安全退出，环境已归位。${NC}"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}✗ 无效命令，请检查面板提示${NC}"
+            ;;
+    esac
+    echo ""
+    read -p "按 Enter 返回主控制台..."
+}
+
+main() {
+    # 优先拦截并路由 CLI 模式命令（如果带有参数启动）
+    if [ -n "$1" ]; then
+        handle_cli_commands "$@"
+    fi
+
+    register_plugins
+    
+    # [启动自检恢复] 尝试静默加载本地项目的历史断点
+    if command -v get_project_hash &>/dev/null; then
+        local db_file="$HOME/.hermesops/projects/$(get_project_hash).json"
+        if [ -f "$db_file" ] && command -v jq &>/dev/null; then
+            export CURRENT_GRID_TASK=$(jq -r '.active_task_id // empty' "$db_file")
+        fi
+    fi
+
+    while true; do
+        show_dashboard
+        read -p "$(echo -e ${BOLD}${WHITE}➜${NC} ) " choice
+        handle_top_choice "$choice"
+    done
+}
+
+main "$@"

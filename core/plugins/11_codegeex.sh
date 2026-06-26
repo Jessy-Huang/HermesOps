@@ -1,0 +1,8 @@
+_name="CodeGeeX"
+_type="Code"
+_cmd="codegeex"
+_pros="清华团队出品|轻量迅速"
+_cons="免费调用有频率限制"
+_quota="≈35次/日"
+_install="echo '📌 请在您的 IDE 插件市场中搜索并手动安装 CodeGeeX'"
+_run="codegeex"

@@ -1,0 +1,16 @@
+{
+  "project_path": "/home/cybot/.ai-tools",
+  "active_task_id": "task_20260626",
+  "status": "COMPLETED",
+  "subtasks": {
+    "sub_vla_clean": {
+      "worker": "unknown",
+      "allowed_radius": [
+        "none"
+      ],
+      "status": "COMPLETED",
+      "timestamp": "2026-06-26T08:49:50+08:00"
+    }
+  },
+  "updated_at": "2026-06-26T08:49:50+08:00"
+}
