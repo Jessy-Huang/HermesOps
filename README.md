@@ -10,6 +10,14 @@
 
 ---
 
+## 🚀 一键安装
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Jessy-Huang/HermesOps/main/install.sh | bash
+```
+
+---
+
 ## 🏗️ 核心设计哲学 (Standing on Shoulders of Giants)
 
 `HermesOps` 在底层架构上像素级融合了当前业内最顶尖的 Agent 工程学思想：
@@ -25,9 +33,9 @@
 ## 📂 纯净目录骨架 (Topology)
 
 ```text
-~/.hermes-ops/
+~/.hermesops/
 ├── bin/
-│   └── hermes-ops                    # 统一全局 CLI 入口
+│   └── hermesops                     # 统一全局 CLI 入口
 ├── config.json                       # 大模型基座与密钥中转配置
 ├── core/                             # 平台控制层内核
 │   ├── env.sh                        # 环境变量与 TUI 配色
