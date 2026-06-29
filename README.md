@@ -18,6 +18,36 @@ curl -fsSL https://raw.githubusercontent.com/Jessy-Huang/HermesOps/main/install.
 
 ---
 
+## 🌐 Web 界面 (v2 新增)
+
+HermesOps v2 引入了现代化的 Web 界面，提供直观的可视化操作体验：
+
+### ✨ 主要功能
+- **核心控制区**: 对话窗口、AI实例管理、远程集群控制
+- **工作区**: 任务看板、终端控制台、代码画布、文件编辑器、变更差异查看
+- **可观测性**: 性能统计、链路追踪、系统监控、日志查看
+- **配置中心**: 全局设置、快捷键绑定、文档指南
+
+### 🚀 启动 Web 界面
+
+```bash
+# 进入项目目录
+cd ~/.hermesops
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 或者使用直接启动命令
+hermesops web
+```
+
+Web 界面将在 http://localhost:5173 自动打开
+
+---
+
 ## 🏗️ 核心设计哲学 (Standing on Shoulders of Giants)
 
 `HermesOps` 在底层架构上像素级融合了当前业内最顶尖的 Agent 工程学思想：
