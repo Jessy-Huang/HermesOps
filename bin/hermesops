@@ -90,7 +90,86 @@ handle_cli_commands() {
             fi
             exit 0
             ;;
+        "web")
+            # 🌐 [前端控制台] 前台独立启动 Web 导航总线
+            # 用法: hermesops web
+            launch_web_console foreground
+            exit 0
+            ;;
     esac
+}
+
+# 🌐 [前端控制台启动器] 拉起 Vue 3 Web 导航总线
+# 用法（内部）: launch_web_console foreground | background
+launch_web_console() {
+    local mode="$1"
+    local fe_dir="$HOME/.hermesops"
+
+    # 1) 依赖检查：Node + npm
+    if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
+        echo -e "${RED}✗ 未检测到 Node.js / npm，请先安装 Node 18+ (https://nodejs.org)${NC}"
+        [ "$mode" = "foreground" ] && exit 1 || return 1
+    fi
+
+    # 2) 前端工程检查
+    if [ ! -f "$fe_dir/package.json" ] || [ ! -f "$fe_dir/index.html" ]; then
+        echo -e "${RED}✗ 前端工程未就位：$fe_dir/package.json 或 index.html 不存在${NC}"
+        [ "$mode" = "foreground" ] && exit 1 || return 1
+    fi
+
+    # 3) 首次启动自动装依赖
+    if [ ! -d "$fe_dir/node_modules" ]; then
+        echo -e "${YELLOW}📦 首次启动 Web 控制台，正在安装前端依赖（约 30s）…${NC}"
+        (cd "$fe_dir" && npm install --no-audit --no-fund 2>&1 | tail -3) || {
+            echo -e "${RED}✗ 依赖安装失败，请手动执行: cd $fe_dir && npm install${NC}"
+            [ "$mode" = "foreground" ] && exit 1 || return 1
+        }
+    fi
+
+    # 4) 探测空闲端口（5173 起，被占则递增）
+    local port=5173
+    while ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE ":$port$"; do
+        port=$((port + 1))
+    done
+    # 后端桥接服务端口（3001 起，被占则递增）
+    local bport=3001
+    while ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE ":$bport$"; do
+        bport=$((bport + 1))
+    done
+
+    # 5) 启动后端桥接服务（src/server/server.mjs）—— 始终后台
+    local srv="$fe_dir/src/server/server.mjs"
+    if [ -f "$srv" ]; then
+        PORT="$bport" nohup node "$srv" > "$fe_dir/.web-bridge.log" 2>&1 &
+        local bpid=$!
+        DAEMON_PIDS["web-bridge"]=$bpid
+        # 等 bridge 就绪（最多 3s）
+        local waited=0
+        while ! ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE ":$bport$" && [ $waited -lt 30 ]; do
+            sleep 0.1; waited=$((waited + 1))
+        done
+    fi
+
+    # 6) 同步把后端端口写入 vite 代理目标（通过环境变量传给 vite.config.ts）
+    export HERMESOPS_BRIDGE_PORT="$bport"
+
+    # 7) 启动 Vite 前端
+    if [ "$mode" = "foreground" ]; then
+        echo -e "${CYAN}🌐 HermesOps Web 控制台启动中 → http://localhost:$port${NC}"
+        echo -e "${DIM}   后端桥接 → 127.0.0.1:$bport (PID $bpid)${NC}"
+        echo -e "${DIM}   Ctrl+C 退出（仅关闭控制台，不影响后台 Agent）${NC}\n"
+        (cd "$fe_dir" && npx vite --port "$port" --host)
+    else
+        # 后台模式：nohup 拉起，PID 入守护池，退出 HermesOps 时自动回收
+        nohup bash -c "cd '$fe_dir' && npx vite --port '$port' --host" \
+            > "$fe_dir/.web-console.log" 2>&1 &
+        local pid=$!
+        DAEMON_PIDS["web-console"]=$pid
+        echo -e "${CYAN}🌐 Web 控制台已后台拉起 → http://localhost:$port${NC}"
+        echo -e "${DIM}   前端 PID $pid · 后端桥接 PID $bpid (:$bport)${NC}"
+        echo -e "${DIM}   日志 ~/.hermesops/.web-console.log / .web-bridge.log${NC}"
+        echo -e "${DIM}   退出 HermesOps 时自动回收 · 继续进入主控制台…${NC}\n"
+    fi
 }
 
 handle_top_choice() {
@@ -120,9 +199,24 @@ handle_top_choice() {
 }
 
 main() {
-    # 优先拦截并路由 CLI 模式命令（如果带有参数启动）
-    if [ -n "$1" ]; then
-        handle_cli_commands "$@"
+    # 🌐 检测 --web / -W 标志：后台拉起 Web 控制台并继续正常 TUI 流程
+    local launch_web_bg=0
+    local clean_args=()
+    for arg in "$@"; do
+        case "$arg" in
+            --web|-W) launch_web_bg=1 ;;
+            *)        clean_args+=("$arg") ;;
+        esac
+    done
+
+    # 优先拦截并路由 CLI 模式命令（已剔除 --web 标志）
+    if [ ${#clean_args[@]} -gt 0 ]; then
+        handle_cli_commands "${clean_args[@]}"
+    fi
+
+    # 后台拉起 Web 控制台（保留原 TUI 流程）
+    if [ "$launch_web_bg" -eq 1 ]; then
+        launch_web_console background
     fi
 
     register_plugins
